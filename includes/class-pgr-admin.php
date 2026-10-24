@@ -294,11 +294,12 @@ class PGR_Admin {
         $retention_days    = get_option('pgr_retention_days', 0);
         $debug_mode        = get_option('pgr_debug_mode', 0);
 
-        $visits_exists  = PGR_DB::table_exists('pgr_visits');
-        $cache_exists   = PGR_DB::table_exists('pgr_ip_cache');
-        $col_page_label = $visits_exists && PGR_DB::column_exists('pgr_visits','page_label');
-        $col_city       = $visits_exists && PGR_DB::column_exists('pgr_visits','city');
-        $row_count      = $visits_exists ? PGR_DB::get_row_count() : 0;
+        $visits_exists   = PGR_DB::table_exists('pgr_visits');
+        $cache_exists    = PGR_DB::table_exists('pgr_ip_cache');
+        $col_page_label  = $visits_exists && PGR_DB::column_exists('pgr_visits','page_label');
+        $col_city        = $visits_exists && PGR_DB::column_exists('pgr_visits','city');
+        $col_track_method= $visits_exists && PGR_DB::column_exists('pgr_visits','track_method');
+        $row_count       = $visits_exists ? PGR_DB::get_row_count() : 0;
         $cron_next      = wp_next_scheduled('pgr_daily_cleanup');
 
         $pub_types = array_keys( get_post_types(array('public'=>true,'_builtin'=>false)) );
@@ -334,7 +335,8 @@ class PGR_Admin {
                 <tr><th>Visits Table</th><td><?php echo $visits_exists  ? '✅ exists' : '❌ missing'; ?></td></tr>
                 <tr><th>IP Cache Table</th><td><?php echo $cache_exists  ? '✅ exists' : '❌ missing'; ?></td></tr>
                 <tr><th>page_label column</th><td><?php echo $col_page_label ? '✅' : '❌ missing — deactivate & reactivate'; ?></td></tr>
-                <tr><th>city column</th><td><?php echo $col_city       ? '✅' : '❌ missing — deactivate & reactivate'; ?></td></tr>
+                <tr><th>city column</th><td><?php echo $col_city        ? '✅' : '❌ missing — deactivate & reactivate'; ?></td></tr>
+                <tr><th>track_method column</th><td><?php echo $col_track_method ? '✅ (v1.5.0 server-side tracking active)' : '❌ missing — deactivate & reactivate'; ?></td></tr>
                 <tr><th>Total Visit Rows</th><td><?php echo number_format($row_count); ?></td></tr>
                 <tr><th>Cron (daily cleanup)</th><td><?php echo $cron_next ? '✅ next: '.date('Y-m-d H:i',$cron_next) : '❌ not scheduled'; ?></td></tr>
                 <tr><th>Logged-in Exclusion</th><td><?php echo $exclude_logged_in ? '⚠️ ON — your own visits are NOT tracked' : '✅ OFF'; ?></td></tr>
@@ -345,6 +347,7 @@ class PGR_Admin {
             <table class="widefat">
                 <thead><tr><th>Version</th><th>Changes</th></tr></thead>
                 <tbody>
+                    <tr><td>1.5.0</td><td>Server-side PHP tracking via <code>wp</code> hook — catches China visitors blocked by GFW and cache-miss hits. Adds <code>track_method</code> column (server/js).</td></tr>
                     <tr><td>1.4.0</td><td>City-level geo breakdown. Debug mode with fetch(). Verbose AJAX responses. Diagnostics panel.</td></tr>
                     <tr><td>1.3.0</td><td>Archive page tracking. Non-English post support via server-side title resolution + base64.</td></tr>
                     <tr><td>1.2.0</td><td>Category/tag filter. Daily HMAC token (CDN-safe). CORS fix for WordPress.com.</td></tr>

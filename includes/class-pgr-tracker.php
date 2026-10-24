@@ -4,12 +4,68 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 class PGR_Tracker {
 
     public function __construct() {
-        // JS beacon tracking
+        // Server-side tracking (v1.5.0) — catches China visitors behind GFW
+        // and cache-miss hits where PHP runs. Runs before JS fires.
+        add_action( 'wp', array( $this, 'server_track' ) );
+
+        // JS beacon tracking (v1.4.0)
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_tracker' ) );
 
         // AJAX handler
         add_action( 'wp_ajax_nopriv_pgr_track', array( $this, 'handle_track' ) );
         add_action( 'wp_ajax_pgr_track',        array( $this, 'handle_track' ) );
+    }
+
+    /* ────────────────────────────────────────────────────────
+     * SERVER-SIDE tracking (v1.5.0)
+     * Fires on the wp action — PHP must run (cache miss or direct hit).
+     * Runs silently in the background; does NOT block page delivery.
+     * ──────────────────────────────────────────────────────── */
+    public function server_track() {
+        // Only track front-end page views (not REST, not AJAX, not admin)
+        if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+            return;
+        }
+
+        // Exclude logged-in users if setting is on
+        if ( get_option( 'pgr_exclude_logged_in', 1 ) && is_user_logged_in() ) {
+            return;
+        }
+
+        // Bot detection
+        $ua = isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        if ( empty( $ua ) || preg_match( '/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|pingdom|uptime|monitor/i', $ua ) ) {
+            return;
+        }
+
+        $context = $this->get_page_context();
+        if ( ! $context ) return;
+
+        // IP and hash
+        $ip      = $this->get_client_ip();
+        $salt    = get_option( 'pgr_salt', '' );
+        $ip_hash = hash( 'sha256', $salt . $ip );
+
+        // Dedup: skip if we (or the JS beacon) already logged this visit recently
+        if ( PGR_DB::has_recent_visit( $context['post_id'], $ip_hash, 30, $context['page_label'] ) ) {
+            return;
+        }
+
+        // GeoIP lookup (uses cache table to avoid repeated API calls)
+        $geo = PGR_GeoIP::lookup( $ip, $ip_hash );
+
+        // Insert with track_method = 'server'
+        PGR_DB::insert_visit( array(
+            'post_id'      => $context['post_id'],
+            'post_type'    => $context['post_type'],
+            'page_label'   => $context['page_label'],
+            'ip_hash'      => $ip_hash,
+            'country'      => $geo['country']      ?? '',
+            'country_code' => $geo['country_code'] ?? '',
+            'region'       => $geo['region']       ?? '',
+            'city'         => $geo['city']         ?? '',
+            'track_method' => 'server',
+        ) );
     }
 
     /* ────────────────────────────────────────────────────────
@@ -87,7 +143,7 @@ class PGR_Tracker {
                  . ( $geo['region'] ? $geo['region'] . ', ' : '' )
                  . ( $geo['country'] ?? '' );
 
-        // Insert
+        // Insert (JS beacon path)
         PGR_DB::insert_visit( array(
             'post_id'      => $post_id,
             'post_type'    => $post_type,
@@ -97,6 +153,7 @@ class PGR_Tracker {
             'country_code' => $geo['country_code'] ?? '',
             'region'       => $geo['region']       ?? '',
             'city'         => $geo['city']         ?? '',
+            'track_method' => 'js',
         ) );
 
         wp_send_json_success( array( 'result' => 'logged', 'geo' => $geo_str ) );

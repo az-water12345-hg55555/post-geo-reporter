@@ -22,6 +22,7 @@ class PGR_DB {
             region         VARCHAR(100) NOT NULL DEFAULT '',
             city           VARCHAR(100) NOT NULL DEFAULT '',
             ip_hash        VARCHAR(64)  NOT NULL DEFAULT '',
+            track_method   VARCHAR(10)  NOT NULL DEFAULT 'js',
             PRIMARY KEY (id),
             KEY idx_date    (visit_date),
             KEY idx_post    (post_id),
@@ -52,6 +53,9 @@ class PGR_DB {
         if ( ! in_array( 'city', $cols, true ) ) {
             $wpdb->query( "ALTER TABLE $visits_table ADD COLUMN city VARCHAR(100) NOT NULL DEFAULT '' AFTER region" );
         }
+        if ( ! in_array( 'track_method', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE $visits_table ADD COLUMN track_method VARCHAR(10) NOT NULL DEFAULT 'js' AFTER ip_hash" );
+        }
     }
 
     /* ── Insert ── */
@@ -70,8 +74,9 @@ class PGR_DB {
                 'region'         => sanitize_text_field( $data['region'] ?? '' ),
                 'city'           => sanitize_text_field( $data['city'] ?? '' ),
                 'ip_hash'        => sanitize_text_field( $data['ip_hash'] ),
+                'track_method'   => sanitize_text_field( $data['track_method'] ?? 'js' ),
             ),
-            array( '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s' )
+            array( '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s' )
         );
         return $wpdb->insert_id;
     }
