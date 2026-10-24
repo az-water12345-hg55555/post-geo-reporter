@@ -1,0 +1,91 @@
+/* Post Geo Reporter Admin Styles */
+
+.pgr-version {
+    font-size: 13px;
+    color: #888;
+    font-weight: normal;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+
+/* Filters */
+.pgr-filters {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+.pgr-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+.pgr-filter-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #50575e;
+}
+.pgr-filter-row input[type="date"],
+.pgr-filter-row input[type="number"],
+.pgr-filter-row select {
+    min-width: 120px;
+}
+
+/* Total */
+.pgr-total {
+    margin: 8px 0 16px;
+    font-size: 14px;
+}
+
+/* Tables */
+.pgr-table { margin-top: 8px; }
+
+/* Country row */
+.pgr-country-row td {
+    background: #e8f0fe !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+.pgr-country-row:hover td { background: #d2e3fc !important; }
+
+/* Region row */
+.pgr-region-row td { background: #f5f5f5 !important; }
+.pgr-region-row td:first-child { padding-left: 28px !important; }
+.pgr-region-row:hover td { background: #eeeeee !important; }
+
+/* City row */
+.pgr-city-row td:nth-child(3) {
+    padding-left: 44px !important;
+    font-size: 12px !important;
+    color: #555;
+}
+.pgr-city-row:hover td { background: #fafafa !important; }
+
+/* Type badges */
+.pgr-type-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+}
+.pgr-type-post      { background: #2e7d32; }
+.pgr-type-page      { background: #1565c0; }
+.pgr-type-home      { background: #f57f17; }
+.pgr-type-category  { background: #c62828; }
+.pgr-type-tag       { background: #6a1b9a; }
+.pgr-type-author    { background: #e65100; }
+.pgr-type-date      { background: #00695c; }
+.pgr-type-search    { background: #283593; }
+.pgr-type-product   { background: #6d4c41; }
+
+/* Diagnostics */
+.pgr-diag-table { margin: 8px 0 24px; }
+.pgr-diag-table th { width: 220px; font-weight: 600; }
