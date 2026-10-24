@@ -22,7 +22,6 @@ class PGR_DB {
             region         VARCHAR(100) NOT NULL DEFAULT '',
             city           VARCHAR(100) NOT NULL DEFAULT '',
             ip_hash        VARCHAR(64)  NOT NULL DEFAULT '',
-            track_method   VARCHAR(10)  NOT NULL DEFAULT 'js',
             PRIMARY KEY (id),
             KEY idx_date    (visit_date),
             KEY idx_post    (post_id),
@@ -53,9 +52,6 @@ class PGR_DB {
         if ( ! in_array( 'city', $cols, true ) ) {
             $wpdb->query( "ALTER TABLE $visits_table ADD COLUMN city VARCHAR(100) NOT NULL DEFAULT '' AFTER region" );
         }
-        if ( ! in_array( 'track_method', $cols, true ) ) {
-            $wpdb->query( "ALTER TABLE $visits_table ADD COLUMN track_method VARCHAR(10) NOT NULL DEFAULT 'js' AFTER ip_hash" );
-        }
     }
 
     /* ── Insert ── */
@@ -74,9 +70,8 @@ class PGR_DB {
                 'region'         => sanitize_text_field( $data['region'] ?? '' ),
                 'city'           => sanitize_text_field( $data['city'] ?? '' ),
                 'ip_hash'        => sanitize_text_field( $data['ip_hash'] ),
-                'track_method'   => sanitize_text_field( $data['track_method'] ?? 'js' ),
             ),
-            array( '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s' )
+            array( '%d','%s','%s','%s','%s','%s','%s','%s','%s','%s' )
         );
         return $wpdb->insert_id;
     }
@@ -173,11 +168,11 @@ class PGR_DB {
             $params   = array_merge( $params, $post_ids );
         }
 
-        $sql = "SELECT country, country_code, COUNT(*) AS visits FROM $table $where GROUP BY country, country_code ORDER BY country ASC";
+        $sql = "SELECT DISTINCT country, country_code FROM $table $where ORDER BY country ASC";
         return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
     }
 
-    /* ── Distinct regions for a country (with visit counts) ── */
+    /* ── Distinct regions for a country ── */
     public static function get_distinct_regions( $date_from, $date_to, $country_code, $post_id = 0, $post_ids = array() ) {
         global $wpdb;
         $table  = $wpdb->prefix . 'pgr_visits';
@@ -193,7 +188,7 @@ class PGR_DB {
             $params   = array_merge( $params, $post_ids );
         }
 
-        $sql = "SELECT region, COUNT(*) AS visits FROM $table $where GROUP BY region ORDER BY region ASC";
+        $sql = "SELECT DISTINCT region FROM $table $where ORDER BY region ASC";
         return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
     }
 

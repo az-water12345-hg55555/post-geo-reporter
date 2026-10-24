@@ -36,43 +36,11 @@
 .pgr-filter-row select {
     min-width: 120px;
 }
-.pgr-button-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
 
 /* Total */
 .pgr-total {
     margin: 8px 0 12px;
     font-size: 14px;
-}
-
-/* Two-column report layout */
-.pgr-two-col {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-}
-.pgr-col-geo {
-    flex: 0 0 auto;
-    width: 420px;
-    min-width: 320px;
-}
-.pgr-col-posts {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-.pgr-col-geo h2,
-.pgr-col-posts h2 {
-    margin-top: 4px;
-}
-
-/* Edit link under post title */
-.pgr-edit-link {
-    font-size: 11px;
-    color: #2271b1;
-    text-decoration: none;
 }
 
 /* Tables */

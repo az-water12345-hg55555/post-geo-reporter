@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Post Geo Reporter
  * Description: Tracks post/page visits and reports breakdowns by country and state/region for a chosen date range.
- * Version: 1.5.0
+ * Version: 1.4.0
  * Author: GeneAka
  * Text Domain: pgr
  */
@@ -11,11 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'PGR_VERSION',    '1.5.0' );
+define( 'PGR_VERSION', '1.4.0' );
 define( 'PGR_PLUGIN_FILE', __FILE__ );
-define( 'PGR_PLUGIN_DIR',  plugin_dir_path( __FILE__ ) );
-define( 'PGR_PLUGIN_URL',  plugin_dir_url( __FILE__ ) );
-define( 'PGR_DB_VERSION',  '1.1' );
+define( 'PGR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'PGR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'PGR_DB_VERSION', '1.1' );
 
 require_once PGR_PLUGIN_DIR . 'includes/class-pgr-db.php';
 require_once PGR_PLUGIN_DIR . 'includes/class-pgr-geoip.php';
@@ -62,7 +62,6 @@ function pgr_init() {
     // Run DB upgrade silently on every load (cheap SHOW COLUMNS check).
     if ( get_option( 'pgr_db_version' ) !== PGR_DB_VERSION ) {
         PGR_DB::create_tables();
-        update_option( 'pgr_db_version', PGR_DB_VERSION );
     }
     new PGR_Tracker();
     new PGR_Admin();

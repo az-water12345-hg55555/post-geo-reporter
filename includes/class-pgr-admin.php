@@ -32,7 +32,7 @@ class PGR_Admin {
      * ════════════════════════════════════════════════════════ */
     public function render_report() {
         $today        = current_time( 'Y-m-d' );
-        $date_from    = isset( $_GET['date_from'] )    ? sanitize_text_field( $_GET['date_from'] )    : date( 'Y-m-d', strtotime( '-27 days', current_time('timestamp') ) );
+        $date_from    = isset( $_GET['date_from'] )    ? sanitize_text_field( $_GET['date_from'] )    : date( 'Y-m-d', strtotime( '-6 days', current_time('timestamp') ) );
         $date_to      = isset( $_GET['date_to'] )      ? sanitize_text_field( $_GET['date_to'] )      : $today;
         $post_id      = isset( $_GET['post_id'] )      ? intval( $_GET['post_id'] )                   : 0;
         $country_code = isset( $_GET['country_code'] ) ? sanitize_text_field( $_GET['country_code'] ) : '';
@@ -52,7 +52,7 @@ class PGR_Admin {
             $tax_post_ids = $posts ?: array( -1 );
         }
 
-        // Dropdown data (countries & regions include visit counts)
+        // Dropdown data
         $countries = PGR_DB::get_distinct_countries( $date_from, $date_to, $post_id, $tax_post_ids );
         $regions   = $country_code ? PGR_DB::get_distinct_regions( $date_from, $date_to, $country_code, $post_id, $tax_post_ids ) : array();
         $all_cats  = get_terms( array( 'taxonomy' => 'category', 'hide_empty' => false ) );
@@ -62,22 +62,6 @@ class PGR_Admin {
         $geo_rows  = PGR_DB::get_geo_breakdown(  $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
         $post_rows = PGR_DB::get_post_breakdown( $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
         $total     = PGR_DB::get_total_visits(   $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
-
-        // Active filter description: "United States, Alabama"
-        $filter_parts = array();
-        if ( $country_code ) {
-            // Find country name from dropdown data
-            $cname = $country_code;
-            foreach ( $countries as $c ) {
-                if ( $c->country_code === $country_code ) { $cname = $c->country; break; }
-            }
-            $filter_parts[] = esc_html( $cname );
-        }
-        if ( $region ) $filter_parts[] = esc_html( $region );
-        $filter_desc = $filter_parts ? implode( ', ', $filter_parts ) : false;
-
-        // Post table title suffix (abbreviated country code)
-        $post_table_suffix = $country_code ? ' — filtered to ' . esc_html( $country_code ) : '';
 
         $export_url = $this->build_export_url( $date_from, $date_to, $post_id, $country_code, $region, $cat_id, $tag_id );
         ?>
@@ -94,14 +78,14 @@ class PGR_Admin {
                         <input type="date" name="date_to" value="<?php echo esc_attr($date_to); ?>">
                     </label>
                     <label>Post/Page ID <small>(optional)</small>
-                        <input type="number" name="post_id" value="<?php echo esc_attr($post_id ?: ''); ?>" placeholder="all" style="width:90px">
+                        <input type="number" name="post_id" value="<?php echo esc_attr($post_id ?: ''); ?>" style="width:90px">
                     </label>
                     <label>Country
                         <select name="country_code">
                             <option value="">All countries</option>
                             <?php foreach ( $countries as $c ) : ?>
                                 <option value="<?php echo esc_attr($c->country_code); ?>" <?php selected($country_code,$c->country_code); ?>>
-                                    <?php echo esc_html( $c->country . ' (' . number_format((int)$c->visits) . ')' ); ?>
+                                    <?php echo esc_html( $c->country ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -111,7 +95,7 @@ class PGR_Admin {
                             <option value="">All regions</option>
                             <?php foreach ( $regions as $r ) : ?>
                                 <option value="<?php echo esc_attr($r->region); ?>" <?php selected($region,$r->region); ?>>
-                                    <?php echo esc_html( $r->region . ' (' . number_format((int)$r->visits) . ')' ); ?>
+                                    <?php echo esc_html( $r->region ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -133,28 +117,20 @@ class PGR_Admin {
                         </select>
                     </label>
                 </div>
-                <div class="pgr-button-row">
-                    <button type="submit" class="button button-primary">Filter</button>
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=pgr-report') ); ?>" class="button">Clear filters</a>
+                <p>
+                    <button type="submit" class="button button-primary">Apply</button>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=pgr-report') ); ?>" class="button">Reset</a>
                     <a href="<?php echo esc_url( $export_url ); ?>" class="button">Export CSV</a>
-                </div>
+                </p>
             </form>
 
-            <p class="pgr-total">
-                Total visits in range: <strong><?php echo number_format($total); ?></strong>
-                <?php if ( $filter_desc ) : ?> &mdash; <em>filtered to: <?php echo $filter_desc; ?></em><?php endif; ?>
-            </p>
+            <p class="pgr-total">Total visits in range: <strong><?php echo number_format($total); ?></strong></p>
 
-            <div class="pgr-two-col">
-                <div class="pgr-col-geo">
-                    <h2>By Country / State</h2>
-                    <?php $this->render_geo_table( $geo_rows ); ?>
-                </div>
-                <div class="pgr-col-posts">
-                    <h2>By Post / Page<?php echo $post_table_suffix; ?></h2>
-                    <?php $this->render_post_table( $post_rows ); ?>
-                </div>
-            </div>
+            <h2>By Country / State</h2>
+            <?php $this->render_geo_table( $geo_rows ); ?>
+
+            <h2>By Post / Page</h2>
+            <?php $this->render_post_table( $post_rows ); ?>
         </div>
         <?php
     }
@@ -221,9 +197,7 @@ class PGR_Admin {
             } else {
                 $post_obj = $pid ? get_post($pid) : null;
                 if ( $post_obj ) {
-                    $edit_url = get_edit_post_link( $pid );
-                    $title = '<a href="' . get_permalink($pid) . '" target="_blank">' . esc_html( get_the_title($pid) ?: $r->page_label ) . '</a>'
-                           . ( $edit_url ? '<br><a href="' . esc_url($edit_url) . '" class="pgr-edit-link">Edit</a>' : '' );
+                    $title = '<a href="' . get_permalink($pid) . '" target="_blank">' . esc_html( get_the_title($pid) ?: $r->page_label ) . '</a>';
                     $cats  = $this->render_terms_list( $pid, 'category' );
                     $tags  = $this->render_terms_list( $pid, 'post_tag' );
                 } else {
@@ -314,12 +288,11 @@ class PGR_Admin {
         $retention_days    = get_option('pgr_retention_days', 0);
         $debug_mode        = get_option('pgr_debug_mode', 0);
 
-        $visits_exists   = PGR_DB::table_exists('pgr_visits');
-        $cache_exists    = PGR_DB::table_exists('pgr_ip_cache');
-        $col_page_label  = $visits_exists && PGR_DB::column_exists('pgr_visits','page_label');
-        $col_city        = $visits_exists && PGR_DB::column_exists('pgr_visits','city');
-        $col_track_method= $visits_exists && PGR_DB::column_exists('pgr_visits','track_method');
-        $row_count       = $visits_exists ? PGR_DB::get_row_count() : 0;
+        $visits_exists  = PGR_DB::table_exists('pgr_visits');
+        $cache_exists   = PGR_DB::table_exists('pgr_ip_cache');
+        $col_page_label = $visits_exists && PGR_DB::column_exists('pgr_visits','page_label');
+        $col_city       = $visits_exists && PGR_DB::column_exists('pgr_visits','city');
+        $row_count      = $visits_exists ? PGR_DB::get_row_count() : 0;
         $cron_next      = wp_next_scheduled('pgr_daily_cleanup');
 
         $pub_types = array_keys( get_post_types(array('public'=>true,'_builtin'=>false)) );
@@ -356,7 +329,6 @@ class PGR_Admin {
                 <tr><th>IP Cache Table</th><td><?php echo $cache_exists  ? '✅ exists' : '❌ missing'; ?></td></tr>
                 <tr><th>page_label column</th><td><?php echo $col_page_label ? '✅' : '❌ missing — deactivate & reactivate'; ?></td></tr>
                 <tr><th>city column</th><td><?php echo $col_city        ? '✅' : '❌ missing — deactivate & reactivate'; ?></td></tr>
-                <tr><th>track_method column</th><td><?php echo $col_track_method ? '✅ (v1.5.0 server-side tracking active)' : '❌ missing — deactivate & reactivate'; ?></td></tr>
                 <tr><th>Total Visit Rows</th><td><?php echo number_format($row_count); ?></td></tr>
                 <tr><th>Cron (daily cleanup)</th><td><?php echo $cron_next ? '✅ next: '.date('Y-m-d H:i',$cron_next) : '❌ not scheduled'; ?></td></tr>
                 <tr><th>Logged-in Exclusion</th><td><?php echo $exclude_logged_in ? '⚠️ ON — your own visits are NOT tracked' : '✅ OFF'; ?></td></tr>
@@ -367,7 +339,6 @@ class PGR_Admin {
             <table class="widefat">
                 <thead><tr><th>Version</th><th>Changes</th></tr></thead>
                 <tbody>
-                    <tr><td>1.5.0</td><td>Server-side PHP tracking via <code>wp</code> hook — catches China visitors blocked by GFW and cache-miss hits. Adds <code>track_method</code> column (server/js).</td></tr>
                     <tr><td>1.4.0</td><td>City-level geo breakdown. Debug mode with fetch(). Verbose AJAX responses. Diagnostics panel.</td></tr>
                     <tr><td>1.3.0</td><td>Archive page tracking. Non-English post support via server-side title resolution + base64.</td></tr>
                     <tr><td>1.2.0</td><td>Category/tag filter. Daily HMAC token (CDN-safe). CORS fix for WordPress.com.</td></tr>
