@@ -32,7 +32,7 @@ class PGR_Admin {
      * ════════════════════════════════════════════════════════ */
     public function render_report() {
         $today        = current_time( 'Y-m-d' );
-        $date_from    = isset( $_GET['date_from'] )    ? sanitize_text_field( $_GET['date_from'] )    : date( 'Y-m-d', strtotime( '-6 days', current_time('timestamp') ) );
+        $date_from    = isset( $_GET['date_from'] )    ? sanitize_text_field( $_GET['date_from'] )    : date( 'Y-m-d', strtotime( '-27 days', current_time('timestamp') ) );
         $date_to      = isset( $_GET['date_to'] )      ? sanitize_text_field( $_GET['date_to'] )      : $today;
         $post_id      = isset( $_GET['post_id'] )      ? intval( $_GET['post_id'] )                   : 0;
         $country_code = isset( $_GET['country_code'] ) ? sanitize_text_field( $_GET['country_code'] ) : '';
@@ -52,7 +52,7 @@ class PGR_Admin {
             $tax_post_ids = $posts ?: array( -1 );
         }
 
-        // Dropdown data
+        // Dropdown data (countries & regions include visit counts)
         $countries = PGR_DB::get_distinct_countries( $date_from, $date_to, $post_id, $tax_post_ids );
         $regions   = $country_code ? PGR_DB::get_distinct_regions( $date_from, $date_to, $country_code, $post_id, $tax_post_ids ) : array();
         $all_cats  = get_terms( array( 'taxonomy' => 'category', 'hide_empty' => false ) );
@@ -62,6 +62,21 @@ class PGR_Admin {
         $geo_rows  = PGR_DB::get_geo_breakdown(  $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
         $post_rows = PGR_DB::get_post_breakdown( $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
         $total     = PGR_DB::get_total_visits(   $date_from, $date_to, $post_id, $country_code, $region, $tax_post_ids );
+
+        // Active filter description: "Netherlands" / "United States, Alabama"
+        $filter_parts = array();
+        if ( $country_code ) {
+            $cname = $country_code;
+            foreach ( $countries as $c ) {
+                if ( $c->country_code === $country_code ) { $cname = $c->country; break; }
+            }
+            $filter_parts[] = esc_html( $cname );
+        }
+        if ( $region ) $filter_parts[] = esc_html( $region );
+        $filter_desc = $filter_parts ? implode( ', ', $filter_parts ) : false;
+
+        // Post table heading suffix
+        $post_table_suffix = $country_code ? ' &mdash; filtered to ' . esc_html( $country_code ) : '';
 
         $export_url = $this->build_export_url( $date_from, $date_to, $post_id, $country_code, $region, $cat_id, $tag_id );
         ?>
@@ -78,14 +93,14 @@ class PGR_Admin {
                         <input type="date" name="date_to" value="<?php echo esc_attr($date_to); ?>">
                     </label>
                     <label>Post/Page ID <small>(optional)</small>
-                        <input type="number" name="post_id" value="<?php echo esc_attr($post_id ?: ''); ?>" style="width:90px">
+                        <input type="number" name="post_id" value="<?php echo esc_attr($post_id ?: ''); ?>" placeholder="all" style="width:90px">
                     </label>
                     <label>Country
                         <select name="country_code">
                             <option value="">All countries</option>
                             <?php foreach ( $countries as $c ) : ?>
                                 <option value="<?php echo esc_attr($c->country_code); ?>" <?php selected($country_code,$c->country_code); ?>>
-                                    <?php echo esc_html( $c->country ); ?>
+                                    <?php echo esc_html( $c->country . ' (' . number_format((int)$c->visits) . ')' ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -95,7 +110,7 @@ class PGR_Admin {
                             <option value="">All regions</option>
                             <?php foreach ( $regions as $r ) : ?>
                                 <option value="<?php echo esc_attr($r->region); ?>" <?php selected($region,$r->region); ?>>
-                                    <?php echo esc_html( $r->region ); ?>
+                                    <?php echo esc_html( $r->region . ' (' . number_format((int)$r->visits) . ')' ); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -117,20 +132,28 @@ class PGR_Admin {
                         </select>
                     </label>
                 </div>
-                <p>
-                    <button type="submit" class="button button-primary">Apply</button>
-                    <a href="<?php echo esc_url( admin_url('admin.php?page=pgr-report') ); ?>" class="button">Reset</a>
+                <div class="pgr-button-row">
+                    <button type="submit" class="button button-primary">Filter</button>
+                    <a href="<?php echo esc_url( admin_url('admin.php?page=pgr-report') ); ?>" class="button">Clear filters</a>
                     <a href="<?php echo esc_url( $export_url ); ?>" class="button">Export CSV</a>
-                </p>
+                </div>
             </form>
 
-            <p class="pgr-total">Total visits in range: <strong><?php echo number_format($total); ?></strong></p>
+            <p class="pgr-total">
+                Total visits in range: <strong><?php echo number_format($total); ?></strong>
+                <?php if ( $filter_desc ) : ?> &mdash; <em>filtered to: <?php echo $filter_desc; ?></em><?php endif; ?>
+            </p>
 
-            <h2>By Country / State</h2>
-            <?php $this->render_geo_table( $geo_rows ); ?>
-
-            <h2>By Post / Page</h2>
-            <?php $this->render_post_table( $post_rows ); ?>
+            <div class="pgr-two-col">
+                <div class="pgr-col-geo">
+                    <h2>By Country / State</h2>
+                    <?php $this->render_geo_table( $geo_rows ); ?>
+                </div>
+                <div class="pgr-col-posts">
+                    <h2>By Post / Page<?php echo $post_table_suffix; ?></h2>
+                    <?php $this->render_post_table( $post_rows ); ?>
+                </div>
+            </div>
         </div>
         <?php
     }
@@ -139,7 +162,6 @@ class PGR_Admin {
     private function render_geo_table( $rows ) {
         if ( empty( $rows ) ) { echo '<p>No data for this period.</p>'; return; }
 
-        // Build tree
         $tree = array();
         foreach ( $rows as $r ) {
             $cc = $r->country_code ?: '??';
@@ -197,7 +219,9 @@ class PGR_Admin {
             } else {
                 $post_obj = $pid ? get_post($pid) : null;
                 if ( $post_obj ) {
-                    $title = '<a href="' . get_permalink($pid) . '" target="_blank">' . esc_html( get_the_title($pid) ?: $r->page_label ) . '</a>';
+                    $edit_url = get_edit_post_link( $pid );
+                    $title = '<a href="' . get_permalink($pid) . '" target="_blank">' . esc_html( get_the_title($pid) ?: $r->page_label ) . '</a>'
+                           . ( $edit_url ? '<br><a href="' . esc_url($edit_url) . '" class="pgr-edit-link">Edit</a>' : '' );
                     $cats  = $this->render_terms_list( $pid, 'category' );
                     $tags  = $this->render_terms_list( $pid, 'post_tag' );
                 } else {
