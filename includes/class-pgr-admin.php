@@ -235,13 +235,17 @@ class PGR_Admin {
                                     </td>
                                     <td><strong><?php echo (int) $c['total']; ?></strong></td>
                                 </tr>
-                                <?php foreach ( $c['regions'] as $rg_name => $rg ) :
-                                    arsort( $rg['cities'] );
+                                <?php
+                                // Only expand to regions when a country filter is active.
+                                // Only expand to cities when both country AND region filters are active.
+                                if ( $country_code ) :
+                                    foreach ( $c['regions'] as $rg_name => $rg ) :
+                                        arsort( $rg['cities'] );
                                 ?>
                                     <tr class="pgr-region-row">
                                         <td></td>
                                         <td colspan="2">
-                                            <?php if ( $c['code'] && ! $region ) : ?>
+                                            <?php if ( ! $region ) : ?>
                                                 <a href="<?php echo esc_url( add_query_arg( array( 'page' => 'pgr-reports', 'pgr_from' => $date_from, 'pgr_to' => $date_to, 'pgr_country' => $c['code'], 'pgr_region' => $rg_name ), admin_url( 'admin.php' ) ) ); ?>"><?php echo esc_html( $rg_name ); ?></a>
                                             <?php else : ?>
                                                 <?php echo esc_html( $rg_name ); ?>
@@ -249,15 +253,20 @@ class PGR_Admin {
                                         </td>
                                         <td><?php echo (int) $rg['total']; ?></td>
                                     </tr>
-                                    <?php foreach ( $rg['cities'] as $city_name => $city_visits ) : ?>
-                                        <tr class="pgr-city-row">
-                                            <td></td>
-                                            <td></td>
-                                            <td><?php echo esc_html( $city_name ); ?></td>
-                                            <td><?php echo (int) $city_visits; ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php endforeach; ?>
+                                    <?php if ( $region ) : ?>
+                                        <?php foreach ( $rg['cities'] as $city_name => $city_visits ) : ?>
+                                            <tr class="pgr-city-row">
+                                                <td></td>
+                                                <td></td>
+                                                <td><?php echo esc_html( $city_name ); ?></td>
+                                                <td><?php echo (int) $city_visits; ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                <?php
+                                    endforeach;
+                                endif;
+                                ?>
                             <?php endforeach; ?>
                         <?php endif; ?>
                         </tbody>
@@ -305,8 +314,8 @@ class PGR_Admin {
                                         <?php endif; ?>
                                     </td>
                                     <td><span class="pgr-type pgr-type-<?php echo esc_attr( $row['post_type'] ); ?>"><?php echo esc_html( $row['post_type'] ); ?></span></td>
-                                    <td><?php echo $is_archive ? '&mdash;' : $this->render_terms_list( $row['post_id'], 'category' ); ?></td>
-                                    <td><?php echo $is_archive ? '&mdash;' : $this->render_terms_list( $row['post_id'], 'post_tag' ); ?></td>
+                                    <td><?php echo $is_archive ? '&mdash;' : $this->render_terms_list( $row['post_id'], 'category', $date_from, $date_to ); ?></td>
+                                    <td><?php echo $is_archive ? '&mdash;' : $this->render_terms_list( $row['post_id'], 'post_tag', $date_from, $date_to ); ?></td>
                                     <td><?php echo (int) $row['visits']; ?></td>
                                 </tr>
                             <?php endforeach; ?>
@@ -323,7 +332,7 @@ class PGR_Admin {
      * Render a post's terms for a taxonomy as a comma-separated, linked list.
      * Returns an em dash if the taxonomy doesn't apply (e.g. tags on a page) or has no terms.
      */
-    private function render_terms_list( $post_id, $taxonomy ) {
+    private function render_terms_list( $post_id, $taxonomy, $date_from = '', $date_to = '' ) {
         if ( ! is_object_in_taxonomy( get_post_type( $post_id ), $taxonomy ) ) {
             return '&mdash;';
         }
@@ -333,9 +342,21 @@ class PGR_Admin {
             return '&mdash;';
         }
 
+        // Map taxonomy to the PGR filter query arg.
+        $param = ( 'category' === $taxonomy ) ? 'pgr_cat' : 'pgr_tag';
+
         $links = array();
         foreach ( $terms as $term ) {
-            $links[] = '<a href="' . esc_url( get_edit_term_link( $term, $taxonomy ) ) . '">' . esc_html( $term->name ) . '</a>';
+            $filter_url = add_query_arg(
+                array(
+                    'page'     => 'pgr-reports',
+                    'pgr_from' => $date_from,
+                    'pgr_to'   => $date_to,
+                    $param     => $term->term_id,
+                ),
+                admin_url( 'admin.php' )
+            );
+            $links[] = '<a href="' . esc_url( $filter_url ) . '">' . esc_html( $term->name ) . '</a>';
         }
 
         return implode( ', ', $links );
