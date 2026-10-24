@@ -173,11 +173,11 @@ class PGR_DB {
             $params   = array_merge( $params, $post_ids );
         }
 
-        $sql = "SELECT DISTINCT country, country_code FROM $table $where ORDER BY country ASC";
+        $sql = "SELECT country, country_code, COUNT(*) AS visits FROM $table $where GROUP BY country, country_code ORDER BY country ASC";
         return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
     }
 
-    /* ── Distinct regions for a country ── */
+    /* ── Distinct regions for a country (with visit counts) ── */
     public static function get_distinct_regions( $date_from, $date_to, $country_code, $post_id = 0, $post_ids = array() ) {
         global $wpdb;
         $table  = $wpdb->prefix . 'pgr_visits';
@@ -193,7 +193,7 @@ class PGR_DB {
             $params   = array_merge( $params, $post_ids );
         }
 
-        $sql = "SELECT DISTINCT region FROM $table $where ORDER BY region ASC";
+        $sql = "SELECT region, COUNT(*) AS visits FROM $table $where GROUP BY region ORDER BY region ASC";
         return $wpdb->get_results( $wpdb->prepare( $sql, $params ) );
     }
 
