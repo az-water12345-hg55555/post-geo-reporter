@@ -371,12 +371,14 @@ class PGR_Admin {
             update_option( 'pgr_exclude_logged_in', isset( $_POST['pgr_exclude_logged_in'] ) ? 1 : 0 );
             update_option( 'pgr_retention_days', isset( $_POST['pgr_retention_days'] ) ? absint( $_POST['pgr_retention_days'] ) : 0 );
             update_option( 'pgr_debug_mode', isset( $_POST['pgr_debug_mode'] ) ? 1 : 0 );
+            update_option( 'pgr_server_track', isset( $_POST['pgr_server_track'] ) ? 1 : 0 );
             echo '<div class="updated"><p>Settings saved.</p></div>';
         }
 
-        $exclude   = get_option( 'pgr_exclude_logged_in', 1 );
-        $retention = get_option( 'pgr_retention_days', 0 );
-        $debug     = get_option( 'pgr_debug_mode', 0 );
+        $exclude      = get_option( 'pgr_exclude_logged_in', 1 );
+        $retention    = get_option( 'pgr_retention_days', 0 );
+        $debug        = get_option( 'pgr_debug_mode', 0 );
+        $server_track = get_option( 'pgr_server_track', 0 );
 
         // Diagnostics.
         global $wpdb;
@@ -410,6 +412,11 @@ class PGR_Admin {
                         </td>
                     </tr>
                     <tr>
+                        <th>Server-side tracking</th>
+                        <td><label><input type="checkbox" name="pgr_server_track" <?php checked( $server_track, 1 ); ?>> Enable PHP-level tracking as a fallback<br>
+                        <span class="description"><strong>Keep this off in normal use.</strong> When on, every HTTP request that reaches WordPress is counted — including bots and crawlers that don't run JavaScript. This inflates visit counts to 3–5× what JS-only tracking or Jetpack Stats shows. Only enable it temporarily when you need to diagnose traffic that blocks JavaScript (e.g. specific network filters). The deduplication window prevents double-counting between server and JS paths.</span></label></td>
+                    </tr>
+                    <tr>
                         <th>Debug mode</th>
                         <td><label><input type="checkbox" name="pgr_debug_mode" <?php checked( $debug, 1 ); ?>> Enable console logging in browser DevTools<br>
                         <span class="description">When on, open any post/page, open DevTools → Console, and you'll see <code>[PGR]</code> entries showing what the beacon sends and the server's response. Turn off after debugging.</span></label></td>
@@ -423,7 +430,8 @@ class PGR_Admin {
             <table class="widefat" style="max-width:640px">
                 <thead><tr><th style="width:80px">Version</th><th>Changes</th></tr></thead>
                 <tbody>
-                <tr><td><strong>1.5.0</strong></td><td>Server-side PHP tracking added as fallback for visitors whose JS beacon is blocked by network filters (e.g. Great Firewall of China); shared 30-min dedup prevents double-counting</td></tr>
+                <tr><td><strong>1.5.1</strong></td><td>Geo table collapses by filter level; category/tag links in By Post/Page now filter the report instead of opening WP edit-term page; server-side tracking disabled by default (was causing 3–5× overcounting from bot traffic)</td></tr>
+                <tr><td>1.5.0</td><td>Server-side PHP tracking added as fallback for visitors whose JS beacon is blocked by network filters (e.g. Great Firewall of China); shared 30-min dedup prevents double-counting</td></tr>
                 <tr><td>1.4.0</td><td>City-level breakdown (country → state → city); verbose debug responses; reduced GeoIP timeout; attachment post type excluded; site_url used for ajax_url (CORS fix)</td></tr>
                 <tr><td>1.3.0</td><td>Debug mode with browser console logging; diagnostics panel in settings; base64 encoding for non-ASCII page labels; server-side title resolution</td></tr>
                 <tr><td>1.2.0</td><td>Archive page tracking (home, category, tag, author, date, search); page_label column (DB 1.1); all public post types tracked; nonce replaced with daily HMAC token (cache/CDN safe); total count respects active filters</td></tr>

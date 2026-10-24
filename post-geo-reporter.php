@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Post Geo Reporter
  * Description: Tracks post/page visits and reports breakdowns by country and state/region for a chosen date range.
- * Version: 1.5.0
+ * Version: 1.5.1
  * Author: GeneAka
  * Text Domain: pgr
  */

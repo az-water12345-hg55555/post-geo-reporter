@@ -252,6 +252,14 @@ class PGR_Tracker {
      * will also find it and return "deduped", so no double-counting occurs.
      */
     public function server_track() {
+        // Server-side tracking is disabled by default because it captures bot/crawler
+        // requests that don't execute JavaScript, causing significant overcounting.
+        // Enable it in Settings only if you specifically need it (e.g. diagnosing
+        // GFW-blocked traffic). JS-only tracking matches third-party analytics closely.
+        if ( ! get_option( 'pgr_server_track', 0 ) ) {
+            return;
+        }
+
         $context = $this->get_page_context();
         if ( ! $context ) {
             return;
