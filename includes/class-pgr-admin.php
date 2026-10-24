@@ -222,7 +222,9 @@ class PGR_Admin {
                         <?php if ( empty( $countries ) ) : ?>
                             <tr><td colspan="4">No data for this range.</td></tr>
                         <?php else : ?>
-                            <?php foreach ( $countries as $cc => $c ) : ?>
+                            <?php
+                            $geo_total = 0;
+                            foreach ( $countries as $cc => $c ) : $geo_total += $c['total']; ?>
                                 <tr class="pgr-country-row">
                                     <td colspan="3">
                                         <strong>
@@ -270,6 +272,14 @@ class PGR_Admin {
                             <?php endforeach; ?>
                         <?php endif; ?>
                         </tbody>
+                        <?php if ( ! empty( $countries ) ) : ?>
+                        <tfoot>
+                            <tr class="pgr-total-row">
+                                <td colspan="3"><strong>Total</strong></td>
+                                <td><strong><?php echo (int) $geo_total; ?></strong></td>
+                            </tr>
+                        </tfoot>
+                        <?php endif; ?>
                     </table>
                 </div>
 
@@ -283,7 +293,9 @@ class PGR_Admin {
                         <?php if ( empty( $post_rows ) ) : ?>
                             <tr><td colspan="5">No data for this range.</td></tr>
                         <?php else : ?>
-                            <?php foreach ( $post_rows as $row ) : ?>
+                            <?php
+                            $post_total = 0;
+                            foreach ( $post_rows as $row ) : $post_total += (int) $row['visits']; ?>
                                 <?php
                                 $is_archive   = in_array( $row['post_type'], array( 'home', 'category', 'tag', 'author', 'date', 'search' ), true );
                                 $display_title = '';
@@ -321,6 +333,14 @@ class PGR_Admin {
                             <?php endforeach; ?>
                         <?php endif; ?>
                         </tbody>
+                        <?php if ( ! empty( $post_rows ) ) : ?>
+                        <tfoot>
+                            <tr class="pgr-total-row">
+                                <td colspan="4"><strong>Total</strong><?php if ( count( $post_rows ) >= 200 ) : ?> <span class="description">(top 200 rows)</span><?php endif; ?></td>
+                                <td><strong><?php echo (int) $post_total; ?></strong></td>
+                            </tr>
+                        </tfoot>
+                        <?php endif; ?>
                     </table>
                 </div>
             </div>

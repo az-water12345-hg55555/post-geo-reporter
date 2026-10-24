@@ -51,6 +51,13 @@
 .pgr-type-date     { background: #e0f0f0; color: #2a7070; }
 .pgr-type-search   { background: #e8e8ff; color: #3a3a9a; }
 
+/* Total footer row */
+.pgr-total-row td {
+    background: #f0f0f0;
+    border-top: 2px solid #c3c4c7;
+    font-size: 13px;
+}
+
 /* City rows */
 .pgr-city-row td:nth-child(3) {
     padding-left: 44px;
