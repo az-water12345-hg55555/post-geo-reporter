@@ -8,9 +8,27 @@ class PGR_Admin {
     const CAP = 'manage_options';
 
     public function __construct() {
-        add_action( 'admin_menu', array( $this, 'add_menu' ) );
-        add_action( 'admin_init', array( $this, 'maybe_export_csv' ) );
+        add_action( 'admin_menu',            array( $this, 'add_menu' ) );
+        add_action( 'admin_init',            array( $this, 'maybe_export_csv' ) );
+        add_action( 'admin_init',            array( $this, 'maybe_purge_server_visits' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+    }
+
+    public function maybe_purge_server_visits() {
+        if ( ! isset( $_POST['pgr_purge_server_nonce'] ) ) {
+            return;
+        }
+        if ( ! wp_verify_nonce( $_POST['pgr_purge_server_nonce'], 'pgr_purge_server' ) ) {
+            return;
+        }
+        if ( ! current_user_can( self::CAP ) ) {
+            return;
+        }
+        global $wpdb;
+        $table = $wpdb->prefix . 'pgr_visits';
+        $wpdb->query( "DELETE FROM $table WHERE track_method = 'server'" );
+        wp_safe_redirect( add_query_arg( array( 'page' => 'pgr-settings', 'pgr_purged' => '1' ), admin_url( 'admin.php' ) ) );
+        exit;
     }
 
     public function add_menu() {
@@ -381,6 +399,10 @@ class PGR_Admin {
             echo '<div class="updated"><p>Settings saved.</p></div>';
         }
 
+        if ( isset( $_GET['pgr_purged'] ) ) {
+            echo '<div class="updated"><p>Server-tracked visits deleted. Your counts now reflect JS-only tracking.</p></div>';
+        }
+
         $exclude      = get_option( 'pgr_exclude_logged_in', 1 );
         $retention    = get_option( 'pgr_retention_days', 0 );
         $debug        = get_option( 'pgr_debug_mode', 0 );
@@ -430,6 +452,34 @@ class PGR_Admin {
                 </table>
                 <?php submit_button( 'Save Settings' ); ?>
             </form>
+
+            <hr>
+            <h2>Data management</h2>
+            <?php
+            global $wpdb;
+            $visits_table   = $wpdb->prefix . 'pgr_visits';
+            $server_count   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $visits_table WHERE track_method = 'server'" );
+            $js_count       = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $visits_table WHERE track_method != 'server'" );
+            ?>
+            <p>
+                Current database: <strong><?php echo number_format( $js_count ); ?></strong> JS-tracked visits,
+                <strong><?php echo number_format( $server_count ); ?></strong> server-tracked visits
+                (bot-inflated — safe to delete).
+            </p>
+            <?php if ( $server_count > 0 ) : ?>
+            <form method="post">
+                <?php wp_nonce_field( 'pgr_purge_server', 'pgr_purge_server_nonce' ); ?>
+                <p>
+                    <button type="submit" class="button button-secondary"
+                        onclick="return confirm('Delete all <?php echo number_format( $server_count ); ?> server-tracked visits? This cannot be undone.');">
+                        Delete <?php echo number_format( $server_count ); ?> server-tracked visits
+                    </button>
+                    &nbsp;<span class="description">Removes bot-inflated rows recorded while server-side tracking was enabled. JS-tracked visits are kept.</span>
+                </p>
+            </form>
+            <?php else : ?>
+            <p class="description">No server-tracked visits in the database — counts are clean.</p>
+            <?php endif; ?>
 
             <hr>
             <h2>Version history</h2>
