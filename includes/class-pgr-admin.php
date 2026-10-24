@@ -213,7 +213,8 @@ class PGR_Admin {
 
             <div class="pgr-columns">
                 <div class="pgr-col">
-                    <h2>By Country / State<?php echo $post_id ? ' &mdash; ' . esc_html( get_the_title( $post_id ) ? get_the_title( $post_id ) : '#' . $post_id ) : ''; ?></h2>
+                    <?php $geo_total = array_sum( array_column( array_values( $countries ), 'total' ) ); ?>
+                    <h2>By Country / State<?php echo $post_id ? ' &mdash; ' . esc_html( get_the_title( $post_id ) ? get_the_title( $post_id ) : '#' . $post_id ) : ''; ?><?php if ( ! empty( $countries ) ) : ?> <span class="pgr-table-total"><?php echo number_format( $geo_total ); ?></span><?php endif; ?></h2>
                     <table class="widefat striped">
                         <thead>
                             <tr><th>Country</th><th>State / Region</th><th>City</th><th>Visits</th></tr>
@@ -272,19 +273,12 @@ class PGR_Admin {
                             <?php endforeach; ?>
                         <?php endif; ?>
                         </tbody>
-                        <?php if ( ! empty( $countries ) ) : ?>
-                        <tfoot>
-                            <tr class="pgr-total-row">
-                                <td colspan="3"><strong>Total</strong></td>
-                                <td><strong><?php echo (int) $geo_total; ?></strong></td>
-                            </tr>
-                        </tfoot>
-                        <?php endif; ?>
                     </table>
                 </div>
 
                 <div class="pgr-col">
-                    <h2>By Post / Page<?php echo $country_code ? ' &mdash; filtered to ' . esc_html( $country_code ) : ''; ?></h2>
+                    <?php $post_total = array_sum( array_column( $post_rows, 'visits' ) ); ?>
+                    <h2>By Post / Page<?php echo $country_code ? ' &mdash; filtered to ' . esc_html( $country_code ) : ''; ?><?php if ( ! empty( $post_rows ) ) : ?> <span class="pgr-table-total"><?php echo number_format( $post_total ); ?><?php if ( count( $post_rows ) >= 200 ) : ?>+<?php endif; ?></span><?php endif; ?></h2>
                     <table class="widefat striped">
                         <thead>
                             <tr><th>Title</th><th>Type</th><th>Category</th><th>Tags</th><th>Visits</th></tr>
@@ -333,14 +327,6 @@ class PGR_Admin {
                             <?php endforeach; ?>
                         <?php endif; ?>
                         </tbody>
-                        <?php if ( ! empty( $post_rows ) ) : ?>
-                        <tfoot>
-                            <tr class="pgr-total-row">
-                                <td colspan="4"><strong>Total</strong><?php if ( count( $post_rows ) >= 200 ) : ?> <span class="description">(top 200 rows)</span><?php endif; ?></td>
-                                <td><strong><?php echo (int) $post_total; ?></strong></td>
-                            </tr>
-                        </tfoot>
-                        <?php endif; ?>
                     </table>
                 </div>
             </div>
