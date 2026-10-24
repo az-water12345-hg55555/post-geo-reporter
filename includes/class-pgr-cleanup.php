@@ -1,5 +1,7 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
 
 class PGR_Cleanup {
 
@@ -10,7 +12,7 @@ class PGR_Cleanup {
     public function run() {
         $days = (int) get_option( 'pgr_retention_days', 0 );
         if ( $days > 0 ) {
-            PGR_DB::delete_old_visits( $days );
+            PGR_DB::delete_older_than( $days );
         }
     }
 }

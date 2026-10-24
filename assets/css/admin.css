@@ -1,124 +1,63 @@
-/* Post Geo Reporter Admin Styles */
-
-.pgr-version {
-    font-size: 13px;
-    color: #888;
-    font-weight: normal;
-    vertical-align: middle;
-    margin-left: 8px;
-}
-
-/* Filters */
-.pgr-filters {
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    border-radius: 4px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-}
-.pgr-filter-row {
+.pgr-wrap .pgr-filters {
     display: flex;
+    align-items: end;
+    gap: 16px;
+    margin: 16px 0;
     flex-wrap: wrap;
-    gap: 12px;
-    align-items: flex-end;
-    margin-bottom: 10px;
 }
-.pgr-filter-row label {
+.pgr-wrap .pgr-filters label {
     display: flex;
     flex-direction: column;
-    gap: 4px;
     font-size: 12px;
     font-weight: 600;
-    color: #50575e;
 }
-.pgr-filter-row input[type="date"],
-.pgr-filter-row input[type="number"],
-.pgr-filter-row select {
-    min-width: 120px;
-}
-.pgr-button-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-/* Total */
-.pgr-total {
-    margin: 8px 0 12px;
+.pgr-wrap .pgr-total {
     font-size: 14px;
 }
-
-/* Two-column report layout */
-.pgr-two-col {
+.pgr-columns {
     display: flex;
     gap: 24px;
-    align-items: flex-start;
+    flex-wrap: wrap;
 }
-.pgr-col-geo {
-    flex: 0 0 auto;
-    width: 420px;
+.pgr-col {
+    flex: 1 1 420px;
     min-width: 320px;
 }
-.pgr-col-posts {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-.pgr-col-geo h2,
-.pgr-col-posts h2 {
-    margin-top: 4px;
-}
-
-/* Edit link under post title */
-.pgr-edit-link {
-    font-size: 11px;
-    color: #2271b1;
-    text-decoration: none;
-}
-
-/* Tables */
-.pgr-table { margin-top: 8px; }
-
-/* Country row */
 .pgr-country-row td {
-    background: #e8f0fe !important;
-    padding-top: 10px !important;
-    padding-bottom: 10px !important;
+    background: #f6f7f7;
 }
-.pgr-country-row:hover td { background: #d2e3fc !important; }
-
-/* Region row */
-.pgr-region-row td { background: #f5f5f5 !important; }
-.pgr-region-row td:first-child { padding-left: 28px !important; }
-.pgr-region-row:hover td { background: #eeeeee !important; }
-
-/* City row */
-.pgr-city-row td:nth-child(3) {
-    padding-left: 44px !important;
-    font-size: 12px !important;
+.pgr-region-row td:nth-child(2) {
+    padding-left: 24px;
     color: #555;
 }
-.pgr-city-row:hover td { background: #fafafa !important; }
 
-/* Type badges */
-.pgr-type-badge {
+/* Post type badges */
+.pgr-type {
     display: inline-block;
-    padding: 2px 7px;
+    padding: 1px 6px;
     border-radius: 3px;
     font-size: 11px;
     font-weight: 600;
-    color: #fff;
     text-transform: uppercase;
+    background: #e0e0e0;
+    color: #444;
 }
-.pgr-type-post      { background: #2e7d32; }
-.pgr-type-page      { background: #1565c0; }
-.pgr-type-home      { background: #f57f17; }
-.pgr-type-category  { background: #c62828; }
-.pgr-type-tag       { background: #6a1b9a; }
-.pgr-type-author    { background: #e65100; }
-.pgr-type-date      { background: #00695c; }
-.pgr-type-search    { background: #283593; }
-.pgr-type-product   { background: #6d4c41; }
+.pgr-type-post     { background: #dff0d8; color: #3a6f3a; }
+.pgr-type-page     { background: #d9edf7; color: #2a5f8f; }
+.pgr-type-home     { background: #fcf8e3; color: #8a6d3b; }
+.pgr-type-category { background: #f2dede; color: #a94442; }
+.pgr-type-tag      { background: #e8d5f5; color: #6a3d9a; }
+.pgr-type-author   { background: #fde8d8; color: #c0581a; }
+.pgr-type-date     { background: #e0f0f0; color: #2a7070; }
+.pgr-type-search   { background: #e8e8ff; color: #3a3a9a; }
 
-/* Diagnostics */
-.pgr-diag-table { margin: 8px 0 24px; }
-.pgr-diag-table th { width: 220px; font-weight: 600; }
+/* City rows */
+.pgr-city-row td:nth-child(3) {
+    padding-left: 44px;
+    color: #777;
+    font-size: 12px;
+}
+.pgr-city-row td:nth-child(4) {
+    color: #777;
+    font-size: 12px;
+}
