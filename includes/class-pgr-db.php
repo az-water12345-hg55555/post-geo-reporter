@@ -193,6 +193,8 @@ class PGR_DB {
             $params = array_merge( $params, array_map( 'absint', $post_ids ) );
         }
 
+        $where .= " AND post_type = 'post'";
+
         $sql = "SELECT post_id, post_type, page_label, COUNT(*) as visits
                 FROM $table
                 $where

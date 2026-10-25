@@ -296,7 +296,7 @@ class PGR_Admin {
 
                 <div class="pgr-col">
                     <?php $post_total = array_sum( array_column( $post_rows, 'visits' ) ); ?>
-                    <h2>By Post / Page<?php echo $country_code ? ' &mdash; filtered to ' . esc_html( $country_code ) : ''; ?><?php if ( ! empty( $post_rows ) ) : ?> <span class="pgr-table-total"><?php echo number_format( $post_total ); ?><?php if ( count( $post_rows ) >= 200 ) : ?>+<?php endif; ?></span><?php endif; ?></h2>
+                    <h2>By Post<?php echo $country_code ? ' &mdash; filtered to ' . esc_html( $country_code ) : ''; ?><?php if ( ! empty( $post_rows ) ) : ?> <span class="pgr-table-total"><?php echo number_format( $post_total ); ?><?php if ( count( $post_rows ) >= 200 ) : ?>+<?php endif; ?></span><?php endif; ?></h2>
                     <table class="widefat striped">
                         <thead>
                             <tr><th>Title</th><th>Type</th><th>Category</th><th>Tags</th><th>Visits</th></tr>
@@ -486,7 +486,8 @@ class PGR_Admin {
             <table class="widefat" style="max-width:640px">
                 <thead><tr><th style="width:80px">Version</th><th>Changes</th></tr></thead>
                 <tbody>
-                <tr><td><strong>1.5.1</strong></td><td>Geo table collapses by filter level; category/tag links in By Post/Page now filter the report instead of opening WP edit-term page; server-side tracking disabled by default (was causing 3–5× overcounting from bot traffic)</td></tr>
+                <tr><td><strong>1.5.2</strong></td><td>By Post table now shows posts only (excludes pages, archives, home)</td></tr>
+                <tr><td>1.5.1</td><td>Geo table collapses by filter level; category/tag links in By Post/Page now filter the report instead of opening WP edit-term page; server-side tracking disabled by default (was causing 3–5× overcounting from bot traffic)</td></tr>
                 <tr><td>1.5.0</td><td>Server-side PHP tracking added as fallback for visitors whose JS beacon is blocked by network filters (e.g. Great Firewall of China); shared 30-min dedup prevents double-counting</td></tr>
                 <tr><td>1.4.0</td><td>City-level breakdown (country → state → city); verbose debug responses; reduced GeoIP timeout; attachment post type excluded; site_url used for ajax_url (CORS fix)</td></tr>
                 <tr><td>1.3.0</td><td>Debug mode with browser console logging; diagnostics panel in settings; base64 encoding for non-ASCII page labels; server-side title resolution</td></tr>
