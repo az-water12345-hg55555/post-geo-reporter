@@ -1,0 +1,25 @@
+# Local credentials and configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and generated packages
+node_modules/
+vendor/
+dist/
+build/
+*.zip
+
+# Local data and diagnostics
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+/exports/
+/backups/
+/coverage/
+.DS_Store
+Thumbs.db

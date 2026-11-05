@@ -1,0 +1,29 @@
+name: PHP syntax
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  php-syntax:
+    name: PHP syntax
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check PHP files
+        shell: bash
+        run: |
+          php --version
+          mapfile -d '' files < <(git ls-files -z -- '*.php')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No tracked PHP files were found."
+            exit 1
+          fi
+          for file in "${files[@]}"; do
+            php -l "$file"
+          done
